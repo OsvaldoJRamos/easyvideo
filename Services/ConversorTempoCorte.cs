@@ -10,7 +10,9 @@
             var tempoFimTimeSpan = ObterTempoTimeSpan(tempoString[2]);
             var tempoDuracaoCorte = tempoFimTimeSpan - tempoInicioTimeSpan;
 
-            return new TempoCorte(tempoInicioTimeSpan, tempoDuracaoCorte);
+            var nomeNovoCorte = tempoString[4];
+
+            return new TempoCorte(tempoInicioTimeSpan, tempoDuracaoCorte, nomeNovoCorte);
         }
 
         private static TimeSpan ObterTempoTimeSpan(string tempoString)
@@ -25,11 +27,13 @@
     {
         public TimeSpan TempoInicio { get; private set; }
         public TimeSpan DuracaoEmSegundos { get; private set; }
+        public string? NomeNovoCorte { get; private set; }
 
-        public TempoCorte(TimeSpan tempoInicio, TimeSpan duracaoEmSegundos)
+        public TempoCorte(TimeSpan tempoInicio, TimeSpan duracaoEmSegundos, string? nomeNovoCorte)
         {
             TempoInicio = tempoInicio;
             DuracaoEmSegundos = duracaoEmSegundos;
+            NomeNovoCorte = nomeNovoCorte;
         }
     }
 }

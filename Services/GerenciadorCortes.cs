@@ -14,7 +14,7 @@ namespace CortadorVideo.Services
             _logger = logger;
         }
 
-        public void CortarTamanhoOriginal(TimeSpan tempoInicioTimeSpan, TimeSpan tempoDuracaoCorte, string caminhoVideoOriginal, string caminhoNovoVideo)
+        public async Task CortarTamanhoOriginal(TimeSpan tempoInicioTimeSpan, TimeSpan tempoDuracaoCorte, string caminhoVideoOriginal, string caminhoNovoVideo, CancellationToken cancellationToken)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace CortadorVideo.Services
                 var outputFile = new OutputFile(caminhoNovoVideo);
 
                 options.CutMedia(tempoInicioTimeSpan, tempoDuracaoCorte);
-                var result = ffmpeg.ConvertAsync(inputFile, outputFile, options, CancellationToken.None).Result;
+                var result = await ffmpeg.ConvertAsync(inputFile, outputFile, options, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -33,7 +33,7 @@ namespace CortadorVideo.Services
             }
         }
 
-        public void GerarComMarcaDagua(string caminhoVideoOriginal, string nomeNovoArquivo)
+        public async Task GerarComMarcaDagua(string caminhoVideoOriginal, string nomeNovoArquivo, CancellationToken cancellationToken)
         {
             try
             {
@@ -54,6 +54,8 @@ namespace CortadorVideo.Services
                         sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -i {Constants.caminhoImagemMarcaDagua} -filter_complex \"overlay=main_w-overlay_w:main_h-overlay_h\" -c:a copy {nomeNovoArquivo}");
                     }
                 }
+
+                await p.WaitForExitAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -62,10 +64,12 @@ namespace CortadorVideo.Services
             }
         }
 
-        public void CortarTamanho9Por16(string caminhoVideoOriginal, string nomeNovoArquivo, bool gerarMarcaDagua)
+        public async Task CortarTamanho9Por16(string caminhoVideoOriginal, string nomeNovoArquivo, bool gerarMarcaDagua, CancellationToken cancellationToken)
         {
             try
             {
+                _logger.LogInformation($"Inicio gerar tamanho 9x16. Arquivo: {nomeNovoArquivo}. Gerar com marca dagua: {gerarMarcaDagua}");
+
                 Process p = new Process();
                 ProcessStartInfo info = new ProcessStartInfo();
                 info.WorkingDirectory = Constants.caminhoffmpeg;
@@ -86,6 +90,10 @@ namespace CortadorVideo.Services
                             sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -vf crop=ih*(9/16):ih {nomeNovoArquivo}");
                     }
                 }
+
+                await p.WaitForExitAsync(cancellationToken);
+
+                _logger.LogInformation($"FIM gerar tamanho 9x16. Arquivo: {nomeNovoArquivo}. Gerar com marca dagua: {gerarMarcaDagua}");
             }
             catch (Exception ex)
             {

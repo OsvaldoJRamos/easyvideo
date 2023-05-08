@@ -34,10 +34,11 @@ namespace CortadorVideo
             {
                 var inicioNovoCorte = txbInicioNovoCorte.Text;
                 var fimNovoCorte = txbFimNovoCorte.Text;
+                var nomeNovoCorte = txbNomeNovoCorte.Text.Replace(" ", "_");
 
                 if (!string.IsNullOrEmpty(inicioNovoCorte.Replace(":", "").Trim()) && !string.IsNullOrEmpty(fimNovoCorte.Replace(":", "").Trim()))
                 {
-                    string temposJuntos = $"{inicioNovoCorte} - {fimNovoCorte}";
+                    string temposJuntos = $"{inicioNovoCorte} - {fimNovoCorte} - {nomeNovoCorte}";
 
                     var valorConvertido = ConversorTempoCorte.Converter(temposJuntos);
                     if (valorConvertido.DuracaoEmSegundos < TimeSpan.FromSeconds(1))
@@ -46,10 +47,11 @@ namespace CortadorVideo
                         return;
                     }
 
-                    lbxTemposCortes.Items.Add(temposJuntos);
+                    lbxTemposCortes.Items.Add(temposJuntos + $" - total {valorConvertido.DuracaoEmSegundos}s");
 
                     txbInicioNovoCorte.Clear();
                     txbFimNovoCorte.Clear();
+                    txbNomeNovoCorte.Clear();
                 }
 
                 this.ActiveControl = txbInicioNovoCorte;
@@ -61,7 +63,7 @@ namespace CortadorVideo
             }
         }
 
-        private void btnGerarCortes_Click(object sender, EventArgs e)
+        private async void btnGerarCortes_Click(object sender, EventArgs e)
         {
             try
             {
@@ -84,33 +86,50 @@ namespace CortadorVideo
                     return;
                 }
 
+                BloquearOuDesbloquearTodosCampos();
+
                 var totalCortes = temposCortesString.Count;
                 ExibirProgressBar(quantidadeRegistros: totalCortes);
 
-                var numeroCortes = ProcessarCortes(temposCortesString, caminhoVideoOriginal, caminhoVideosCortados);
+                await ProcessarCortes(temposCortesString, caminhoVideoOriginal, caminhoVideosCortados);
 
                 MessageBox.Show($"Fim do processamento dos cortes. Confira se todos foram gerados com sucesso.");
                 _logger.LogInformation($"Fim processamento de todos os cortes");
 
+                BloquearOuDesbloquearTodosCampos();
                 LimparCamposAposTerminarCortes();
                 OcultarProgressBar();
             }
             catch (Exception ex)
             {
+                BloquearOuDesbloquearTodosCampos();
+
                 _logger.LogCritical($"Erro ao gerar cortes. Mensagem: {ex.Message}");
                 MessageBox.Show($"Houve um erro ao gerar um ou mais. Verifique se eles foram gerados. Mensagem de erro: {ex.Message}");
             }
         }
 
+        private void BloquearOuDesbloquearTodosCampos()
+        {
+            foreach (Control control in this.Controls)
+            {
+                control.Enabled = !control.Enabled;
+            }
+
+            lblBarraProgresso.Enabled = true;
+            lblBarraProgresso.Enabled = true;
+        }
+
         private void ExibirProgressBar(int quantidadeRegistros)
         {
-            progressBar1.Visible = true;
             progressBar1.Maximum = quantidadeRegistros;
+            progressBar1.Visible = true;
             lblBarraProgresso.Visible = true;
         }
 
         private void OcultarProgressBar()
         {
+            progressBar1.Value = 0;
             progressBar1.Maximum = 100;
             progressBar1.Visible = false;
             lblBarraProgresso.Visible = false;
@@ -123,7 +142,7 @@ namespace CortadorVideo
             txbCaminhoVideosCortados.Clear();
         }
 
-        private int ProcessarCortes(ListBox.ObjectCollection temposCortesString, string caminhoVideoOriginal, string caminhoVideosCortados)
+        private async Task<int> ProcessarCortes(ListBox.ObjectCollection temposCortesString, string caminhoVideoOriginal, string caminhoVideosCortados, CancellationToken cancellationToken = default(CancellationToken))
         {
             int numeroCorte = 0;
             foreach (var tempoCorteString in temposCortesString)
@@ -136,14 +155,14 @@ namespace CortadorVideo
                 var tempoInicio = tempoCorte.TempoInicio;
                 var tempoDuracao = tempoCorte.DuracaoEmSegundos;
 
-                var caminhoVideoCortadoTamanhoOriginal = caminhoVideosCortados + $"\\{numeroCorte}.mp4";
-                _gerenciadorCortes.CortarTamanhoOriginal(tempoInicio, tempoDuracao, caminhoVideoOriginal, caminhoVideoCortadoTamanhoOriginal);
+                var caminhoVideoCortadoTamanhoOriginal = caminhoVideosCortados + $"\\{tempoCorte.NomeNovoCorte ?? numeroCorte.ToString()}.mp4";
+                await _gerenciadorCortes.CortarTamanhoOriginal(tempoInicio, tempoDuracao, caminhoVideoOriginal, caminhoVideoCortadoTamanhoOriginal, cancellationToken);
 
-                if (cbxMarcaDagua.Checked)
-                    _gerenciadorCortes.GerarComMarcaDagua(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-marcaDagua.mp4");
+                //if (cbxMarcaDagua.Checked)
+                //    _gerenciadorCortes.GerarComMarcaDagua(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-marcaDagua.mp4");
 
                 if (cbxGerarNaResolucao9por16.Checked)
-                    _gerenciadorCortes.CortarTamanho9Por16(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-9por16.mp4", cbxMarcaDagua.Checked);
+                    await _gerenciadorCortes.CortarTamanho9Por16(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-9por16.mp4", cbxMarcaDagua.Checked, cancellationToken);
 
                 IncrementarProgressBar();
 
@@ -186,7 +205,8 @@ namespace CortadorVideo
 
         private void btnRemoverUltimo_Click(object sender, EventArgs e)
         {
-            lbxTemposCortes.Items.RemoveAt(lbxTemposCortes.Items.Count - 1);
+            if (lbxTemposCortes.Items.Count > 0)
+                lbxTemposCortes.Items.RemoveAt(lbxTemposCortes.Items.Count - 1);
         }
     }
 }
