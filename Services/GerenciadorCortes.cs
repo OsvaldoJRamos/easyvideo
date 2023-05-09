@@ -51,7 +51,7 @@ namespace CortadorVideo.Services
                 {
                     if (sw.BaseStream.CanWrite)
                     {
-                        sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -i {Constants.caminhoImagemMarcaDagua} -filter_complex \"overlay=main_w-overlay_w:main_h-overlay_h\" -c:a copy {nomeNovoArquivo}");
+                        sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -i {Constants.caminhoImagemMarcaDagua} -filter_complex overlay=main_w-overlay_w:main_h-overlay_h -c:a copy {nomeNovoArquivo}");
                     }
                 }
 
@@ -85,7 +85,7 @@ namespace CortadorVideo.Services
                     if (sw.BaseStream.CanWrite)
                     {
                         if (gerarMarcaDagua)
-                            sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -vf crop=ih*(9/16):ih {nomeNovoArquivo} && ffmpeg -i {nomeNovoArquivo} -i C:\\Users\\osval\\Downloads\\200SemFundo.png -filter_complex overlay=main_w-overlay_w:main_h-overlay_h -c:a copy {nomeNovoArquivo.Replace(".mp4", "")}-marcaDagua.mp4");
+                            sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -vf crop=ih*(9/16):ih {nomeNovoArquivo} && ffmpeg -i {nomeNovoArquivo} -i {Constants.caminhoImagemMarcaDagua} -filter_complex overlay=main_w-overlay_w:main_h-overlay_h -c:a copy {nomeNovoArquivo.Replace(".mp4", "")}-marcaDagua.mp4");
                         else
                             sw.WriteLine($"ffmpeg -i {caminhoVideoOriginal} -vf crop=ih*(9/16):ih {nomeNovoArquivo}");
                     }

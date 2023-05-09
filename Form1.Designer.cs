@@ -43,7 +43,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.txbFimNovoCorte = new System.Windows.Forms.MaskedTextBox();
             this.txbInicioNovoCorte = new System.Windows.Forms.MaskedTextBox();
-            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.btnNavegarCaminhoOriginal = new System.Windows.Forms.Button();
             this.btnNavegarCaminhoVideosCortados = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
@@ -52,6 +51,7 @@
             this.cbxGerarNaResolucao9por16 = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.cbxMarcaDagua = new System.Windows.Forms.CheckBox();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -259,9 +259,9 @@
             this.cbxMarcaDagua.AutoSize = true;
             this.cbxMarcaDagua.Location = new System.Drawing.Point(20, 239);
             this.cbxMarcaDagua.Name = "cbxMarcaDagua";
-            this.cbxMarcaDagua.Size = new System.Drawing.Size(130, 19);
+            this.cbxMarcaDagua.Size = new System.Drawing.Size(253, 19);
             this.cbxMarcaDagua.TabIndex = 22;
-            this.cbxMarcaDagua.Text = "Gerar Marca D\'agua";
+            this.cbxMarcaDagua.Text = "Gerar na resolução 9:16 com Marca D\'Água";
             this.cbxMarcaDagua.UseVisualStyleBackColor = true;
             // 
             // Form1
@@ -305,7 +305,6 @@
         private GroupBox groupBox1;
         private MaskedTextBox txbFimNovoCorte;
         private MaskedTextBox txbInicioNovoCorte;
-        private FolderBrowserDialog folderBrowserDialog1;
         private Button btnNavegarCaminhoOriginal;
         private Button btnNavegarCaminhoVideosCortados;
         private ProgressBar progressBar1;
@@ -316,5 +315,6 @@
         private CheckBox cbxMarcaDagua;
         private Label label3;
         private TextBox txbNomeNovoCorte;
+        private FolderBrowserDialog folderBrowserDialog1;
     }
 }
