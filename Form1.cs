@@ -38,20 +38,18 @@ namespace CortadorVideo
 
                 if (!string.IsNullOrEmpty(inicioNovoCorte.Replace(":", "").Trim()) && !string.IsNullOrEmpty(fimNovoCorte.Replace(":", "").Trim()))
                 {
-                    string temposJuntos = $"{inicioNovoCorte} - {fimNovoCorte} - {nomeNovoCorte}";
+                    string descricaoExibicaoTela = $"{nomeNovoCorte} - {inicioNovoCorte} até {fimNovoCorte}";
 
-                    var valorConvertido = ConversorTempoCorte.Converter(temposJuntos);
+                    var valorConvertido = ConversorTempoCorte.ConverterValorTela(descricaoExibicaoTela);
                     if (valorConvertido.DuracaoEmSegundos < TimeSpan.FromSeconds(1))
                     {
                         MessageBox.Show("O tempo fim deve ser maior que o tempo início");
                         return;
                     }
 
-                    lbxTemposCortes.Items.Add(temposJuntos + $" - total {valorConvertido.DuracaoEmSegundos}s");
+                    lbxTemposCortes.Items.Add(descricaoExibicaoTela + $" (total {valorConvertido.DuracaoEmSegundos}s)");
 
-                    txbInicioNovoCorte.Clear();
-                    txbFimNovoCorte.Clear();
-                    txbNomeNovoCorte.Clear();
+                    LimparCamposCriacaoNovoCorte();
                 }
 
                 this.ActiveControl = txbInicioNovoCorte;
@@ -61,6 +59,13 @@ namespace CortadorVideo
                 MessageBox.Show("Erro ao processar tempos. Verifique os valores digitados e tente novamente.");
                 return;
             }
+        }
+
+        private void LimparCamposCriacaoNovoCorte()
+        {
+            txbInicioNovoCorte.Clear();
+            txbFimNovoCorte.Clear();
+            txbNomeNovoCorte.Clear();
         }
 
         private async void btnGerarCortes_Click(object sender, EventArgs e)
@@ -151,15 +156,10 @@ namespace CortadorVideo
 
                 _logger.LogInformation($"Inicio processamento corte {numeroCorte}");
 
-                var tempoCorte = ConversorTempoCorte.Converter(tempoCorteString.ToString());
-                var tempoInicio = tempoCorte.TempoInicio;
-                var tempoDuracao = tempoCorte.DuracaoEmSegundos;
+                var tempoCorte = ConversorTempoCorte.ConverterValorTela(tempoCorteString.ToString());
 
-                var caminhoVideoCortadoTamanhoOriginal = caminhoVideosCortados + $"\\{tempoCorte.NomeNovoCorte ?? numeroCorte.ToString()}.mp4";
-                await _gerenciadorCortes.CortarTamanhoOriginal(tempoInicio, tempoDuracao, caminhoVideoOriginal, caminhoVideoCortadoTamanhoOriginal, cancellationToken);
-
-                //if (cbxMarcaDagua.Checked)
-                //    _gerenciadorCortes.GerarComMarcaDagua(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-marcaDagua.mp4");
+                var caminhoVideoCortadoTamanhoOriginal = caminhoVideosCortados + $"\\{tempoCorte.Nome ?? numeroCorte.ToString()}.mp4";
+                await _gerenciadorCortes.CortarTamanhoOriginal(tempoCorte.TempoInicio, tempoCorte.DuracaoEmSegundos, caminhoVideoOriginal, caminhoVideoCortadoTamanhoOriginal, cancellationToken);
 
                 if (cbxGerarNaResolucao9por16.Checked)
                     await _gerenciadorCortes.CortarTamanho9Por16(caminhoVideoCortadoTamanhoOriginal, caminhoVideoCortadoTamanhoOriginal.Replace(".mp4", "") + "-9por16.mp4", cbxMarcaDagua.Checked, cancellationToken);

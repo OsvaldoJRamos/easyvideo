@@ -2,17 +2,18 @@
 {
     public static class ConversorTempoCorte
     {
-        public static TempoCorte Converter(string valorDaTela)
+        public static Corte ConverterValorTela(string descricaoExibicaoTela)
         {
-            var tempoString = valorDaTela.Split(" ");
+            var tempoString = descricaoExibicaoTela.Split(" ");
 
-            var tempoInicioTimeSpan = ObterTempoTimeSpan(tempoString[0]);
-            var tempoFimTimeSpan = ObterTempoTimeSpan(tempoString[2]);
+            var nomeNovoCorte = tempoString[0];
+
+            var tempoInicioTimeSpan = ObterTempoTimeSpan(tempoString[2]);
+            var tempoFimTimeSpan = ObterTempoTimeSpan(tempoString[4]);
             var tempoDuracaoCorte = tempoFimTimeSpan - tempoInicioTimeSpan;
 
-            var nomeNovoCorte = tempoString[4];
 
-            return new TempoCorte(tempoInicioTimeSpan, tempoDuracaoCorte, nomeNovoCorte);
+            return new Corte(tempoInicioTimeSpan, tempoDuracaoCorte, nomeNovoCorte);
         }
 
         private static TimeSpan ObterTempoTimeSpan(string tempoString)
@@ -23,17 +24,17 @@
         }
     }
 
-    public class TempoCorte
+    public class Corte
     {
         public TimeSpan TempoInicio { get; private set; }
         public TimeSpan DuracaoEmSegundos { get; private set; }
-        public string? NomeNovoCorte { get; private set; }
+        public string? Nome { get; private set; }
 
-        public TempoCorte(TimeSpan tempoInicio, TimeSpan duracaoEmSegundos, string? nomeNovoCorte)
+        public Corte(TimeSpan tempoInicio, TimeSpan duracaoEmSegundos, string? nomeNovoCorte)
         {
             TempoInicio = tempoInicio;
             DuracaoEmSegundos = duracaoEmSegundos;
-            NomeNovoCorte = nomeNovoCorte;
+            Nome = nomeNovoCorte;
         }
     }
 }
